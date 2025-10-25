@@ -1,0 +1,59 @@
+name: 💦 🥵 Deploy Jacksearch Backend 💦 🥵
+
+on:
+  push:
+    branches: [ "main" ]
+    paths:
+      - "jacksearchBE/**"
+      - "docker-compose.yml"
+      - ".github/workflows/deploy.yml"
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Add VPS to known_hosts
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -p ${SSH_PORT:-22} ${{ secrets.VPS_HOST }} >> ~/.ssh/known_hosts
+
+      - name: SSH into server & deploy
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: 22
+          script: |
+            set -euo pipefail
+
+            APP_DIR="/srv/apps/jacksearch_be"
+            REPO_URL="${{ github.server_url }}/${{ github.repository }}.git"
+
+            # --- Clone / pull repo ---
+            if [ ! -d "$APP_DIR/.git" ]; then
+              mkdir -p "$APP_DIR"
+              git clone "$REPO_URL" "$APP_DIR"
+            fi
+
+            cd "$APP_DIR"
+            git fetch origin
+            git checkout main
+            git pull --rebase origin main
+
+            # --- Generate .env dynamically ---
+            cat > ./jacksearchBE/.env <<EOF
+            MONGO_URI=${{ secrets.MONGO_URI }}
+            PORT=5434
+            HOST=0.0.0.0
+            EOF
+
+            echo "✅ .env file created successfully."
+
+            # --- Build & deploy Docker ---
+            docker network create proxy || true
+            docker compose down
+            docker compose up --build -d
+            docker image prune -f || true

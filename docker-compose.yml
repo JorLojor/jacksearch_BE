@@ -1,0 +1,24 @@
+# docker-compose.yml
+version: "3.8"
+
+services:
+  jacksearch-be:
+    build:
+      context: ./jacksearchBE
+      dockerfile: Dockerfile
+    container_name: jacksearch_be
+    restart: unless-stopped
+    env_file:
+      - ./jacksearchBE/.env
+    networks:
+      - proxy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.jacksearch-be.rule=Host(`api.jacksearch.space`) && PathPrefix(`/api`)"
+      - "traefik.http.routers.jacksearch-be.entrypoints=websecure"
+      - "traefik.http.routers.jacksearch-be.tls=true"
+      - "traefik.http.services.jacksearch-be.loadbalancer.server.port=5434"
+
+networks:
+  proxy:
+    external: true
