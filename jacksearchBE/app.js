@@ -10,6 +10,8 @@ connectDB();
 
 
 // routers
+const modeRoutes = require("./routers/mode-routes");
+app.use("/api/modes", modeRoutes);
 
 app.get('/', (req, res) => {
     res.send('malem minggu ngoding wkwkwkwkkwkwkwkwk')
