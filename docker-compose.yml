@@ -14,7 +14,7 @@ services:
       - proxy
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.jacksearch-be.rule=Host(`api.jacksearch.space`) && PathPrefix(`/api`)"
+      - "traefik.http.routers.jacksearch-be.rule=Host(`api.jacksearch.space`)"
       - "traefik.http.routers.jacksearch-be.entrypoints=websecure"
       - "traefik.http.routers.jacksearch-be.tls=true"
       - "traefik.http.services.jacksearch-be.loadbalancer.server.port=5434"
