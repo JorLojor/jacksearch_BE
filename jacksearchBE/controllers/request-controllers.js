@@ -1,5 +1,7 @@
 const Mode = require("../models/mode-models");
+const requestModels = require("../models/request-models");
 const Request = require("../models/request-models");
+const resultModels = require("../models/result-models");
 const Result = require("../models/result-models");
 
 exports.createRequest = async (req, res) => {
@@ -41,3 +43,38 @@ exports.createRequest = async (req, res) => {
         });
     }
 };
+
+
+exports.poolingRequest = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const data = await requestModels.findById(id)
+
+        if (data.status === "failed") {
+            res.status(400).json({
+                "message": "failed to scaning target"
+            })
+        }
+
+        if (data.status === "process") {
+            res.status(200).json({
+                "message": "processing scan target"
+            })
+        }
+
+        if (data.status === "success") {
+            const result = await resultModels.findById(data.IdResult)
+            res.status(200).json({
+                "message": "processing scan target",
+                "data": result
+            })
+        }
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({
+            message: "[internal server error]: createRequest controller",
+            error: error.message,
+        });
+    }
+}
