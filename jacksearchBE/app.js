@@ -38,7 +38,7 @@ const modeRoutes = require("./routers/mode-routes");
 app.use("/api/modes", modeRoutes);
 
 const requestRoutes = require("./routers/request-routes")
-app.use("/api/request",)
+app.use("/api/request", requestRoutes)
 
 
 app.get("/health", (req, res) => {
